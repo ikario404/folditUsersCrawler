@@ -2,21 +2,16 @@
 # -*- coding: utf-8 -*-
 from bs4 import BeautifulSoup
 import requests
-import urllib.parse
-import csv
 import lxml
-import string
-import sys
 import json
-import time 
 import pprint
+
 # Helpfull color
 class bcolors:
     WARNING = '\033[93m'
     FAIL = '\033[91m'
     ENDC = '\033[0m'
     BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
 
 ## Downloader
 def download(url):
