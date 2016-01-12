@@ -57,6 +57,7 @@ def dataTarget(html_body, extracted_info):
         data = host + author_url
         ## Uncomment if wanna add on loop data save
         # json_save(extracted_info)
+        return listeA
 
 ## First Crawl
 def extract_links(html):
@@ -66,6 +67,7 @@ def extract_links(html):
     extracted_info = {}
     # surely not the most efficiency...
     dataTarget(html_body, extracted_info)
+    extract_users_info(host + listeA['url'],extracted_info)
     # Get NextPage then download until none
     next_page = soup.find('a', {'title' : 'Go to next page'}).get('href')
     next_page_URL = host + next_page
@@ -78,7 +80,8 @@ def extract_links(html):
             next_page_URL = host + next_page
             html_body = soup.find_all('div', {'class' : 'body'})
             # reprise des data
-            dataTarget(html_body, extracted_info)        
+            dataTarget(html_body, extracted_info)
+            extract_users_info(host + listeA['url'],extracted_info)
         except Exception as e:
             print('Erreur sur : ', e)
             return
@@ -93,6 +96,30 @@ def extract_users_info(html, dataObj):
     try:
         for x in userInfoHTML:
             profile = x.find('table', {'class' : 'drupal-info'})
+            location = profile.find('th', text='Location:')
+            if location:
+                location = location.find_next('td').getText()
+                listeB['location'] = location
+            startedFolding = profile.find('th', text='Started Folding:')
+            if startedFolding:
+                startedFolding = startedFolding.find_next('td').getText()
+                listeB['startedFolding'] = startedFolding
+            links = profile.find('th', text='About me:')
+            if links:
+                links = links.find_next('td').find_all('a', href=True)
+                linksData = []
+                for l in links:
+                    link = l.get('href') 
+                    linksData.append(link)
+                listeB['linksDesc'] = linksData
+            hobbies = profile.find('th', text='Hobbies:')
+            if hobbies:
+                hobbies = hobbies.find_next('td').getText().strip()
+                listeB['hobbies'] = hobbies
+            group = profile.find('th', text='Group:')
+            if group:
+                group = group.find_next('td').getText().strip()
+                listeB['group'] = group
             hobbies = profile.find('th', text='Hobbies:')
             if hobbies:
                 hobbies = hobbies.find_next('td').getText()
@@ -103,6 +130,7 @@ def extract_users_info(html, dataObj):
                 listeB['groupURL'] = groupURL
             dataObj['rank'] = dataObj['rank'].strip('\n\t')
             dataObj.update(listeB)
+            pprint.pprint(dataObj)
     except Exception as e:
         print('Erreur sur : ', e)
         return    
@@ -112,14 +140,11 @@ if __name__ == '__main__':
     host = 'https://fold.it'
     indexUsers = '/portal/players/profs'
     dbBase = 'db/' 
-    ## Uncomment if previous data else init 
-    # userList = db + 'dataCompleteWithHomepage.json'
-    # dataF = json.load(open(userList))
     getIndex = download(host + indexUsers)
-    dataF = extract_links(getIndex)
+    extracted_info = extract_links(getIndex)
     lastFile = db + 'dataLast.json'
     # Boucle par url d'utilisateur trouvé
-    for userData in dataF:
+    for userData in extracted_info:
         # Download, extract info and then save (or sort of...)
         userURL = host + userData['url']
         dataDownload = download(userURL)
