@@ -22,5 +22,5 @@ Will give it in a file something like:
     "groupURL": ""
 }]
 ```
-  
+Probably lot of thing to optimize or extend...  
 Work with BeautifulSoup, requets, lxml, json, pprint.
